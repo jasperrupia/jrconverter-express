@@ -1,0 +1,26 @@
+{
+  "name": "jrconverter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "PORT=3002 NODE_ENV=development node index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasperrupia/jrconverter-express.git"
+  },
+  "author": "Katunzi JR",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jasperrupia/jrconverter-express/issues"
+  },
+  "homepage": "https://github.com/jasperrupia/jrconverter-express#readme",
+  "dependencies": {
+    "dotenv": "^16.4.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "pug": "^3.0.2"
+  }
+}
