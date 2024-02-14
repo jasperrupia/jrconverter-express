@@ -1,0 +1,16 @@
+<h1>Sign In</h1>
+<%- message %>
+<form method="post" action="/auth">
+  <p>
+    <label for="username">Username:</label>
+    <input type="text" name="username" id="username" required>
+  </p>
+  <p>
+    <label for="password">Password:</label>
+    <input type="text" name="password" id="password">
+  </p>
+  <p>
+    <input type="submit" value="signIn">
+  </p>
+</form>
+<a href="/auth/signup">SignUp</a>

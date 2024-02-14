@@ -1,14 +1,7 @@
-var server = require('./server');
+var authRoutes = require('./contrals/auth');
+var portalRoutes = require('./contrals/portal');
+var adminRoutes = require('./contrals/admin');
 
-// server.get('/', (req, res) => {
-//   res.send('<h1>Home Text!</h1>')
-// })
-
-server.get('/', function(req, res){
-    res.render('index', { title: 'Jr Converter' });
-});
-
-// server.get('/index', function(req, res){
-//     res.sendFile(path.join(__dirname+'/views/index.html'));
-// });
-
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/', portalRoutes);
