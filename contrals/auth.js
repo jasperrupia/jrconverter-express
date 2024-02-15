@@ -1,7 +1,7 @@
 "use strict"
 
 var session = require('express-session');
-const store = session.MemoryStore();
+const memoryStore = new session.MemoryStore();
 const bcrypt = require('bcrypt');
 var pagesPath = 'pages/auth/';
 const fs = require("fs/promises"); 
@@ -15,18 +15,18 @@ async function readUserData() {
     userData = JSON.parse(data);
   }
   catch (err) {
-    console.error('Error reading user.json file:', err);
+    console.error('Error reading ' + userDataPath + ' file:', err);
   }
 } 
 
 // middleware
 app.use(express.urlencoded({ extended: false }))
 app.use(session({ 
-  resave: false, // don't save session if unmodified
-  saveUninitialized: false, // if true -> create session cookie even on page load & save session if modified
-  secret: 'sign session id cookies',
-  cookie: {maxAge: 300000},
-  store: store
+  resave: false, // false -> don't save session if unmodified
+  saveUninitialized: false, // if true -> create session cookie even on page load & save session if unmodified
+  secret: 'sign-session-id-cookies',
+  cookie: {maxAge: 30000},
+  store: memoryStore
 }));
 
 // Session-persisted message middleware
@@ -40,8 +40,28 @@ app.use(function(req, res, next){
   if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
   next();
 });
- 
+
+
+global.checkAuthentication = function isAuthenticated(req, res, next) {
+  if (!req.session.authenticated) {
+    req.session.error = 'Access denied! You see!';
+    return res.redirect('/auth');
+  }
+  next();
+}
+
+router.get('/signup', function(req, res){
+  res.render(pagesPath + 'sign_up');
+});
+
 router.post('/signup', async (req, res) => { 
+  const {username, password} = req.body;
+  await readUserData();
+  const user = userData.find(user => user.name === username)
+  if (user !== null) {
+    req.session.error = 'User already exist!, Change username please.';
+    res.redirect('/auth/signup');
+  }
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10)
     const user = { name: req.body.username, pass: hashedPassword }
@@ -52,28 +72,11 @@ router.post('/signup', async (req, res) => {
       err => {
           if (err) throw err;
       });
-    res.status(201).send()
+    res.status(201).send('User created successful.')
   } catch {
-    res.status(500).send()
+    res.status(500).send('Server Error! Plese calm down.')
   }
 })
-
-function isAuthenticated(req, res, next) {
-  if (req.session.user) {
-    next();
-  } else {
-    req.session.error = 'Access denied! You see!';
-    res.redirect('/auth');
-  }
-}
-
-router.get('/restricted', isAuthenticated, function(req, res){
-  res.render(pagesPath + 'sign_in');
-});
-
-router.get('/signup', function(req, res){
-  res.render(pagesPath + 'sign_up');
-});
 
 router.get('/signout', function(req, res){
   req.session.destroy(function(){
@@ -87,7 +90,7 @@ router.get('/', function(req, res){
 
 router.post('/', async function (req, res, next) {
   const {username, password} = req.body;
-  readUserData();
+  await readUserData();
   const user = userData.find(user => user.name === username)
   if (user == null) {
     req.session.error = 'User not found!!';
@@ -103,7 +106,7 @@ router.post('/', async function (req, res, next) {
       });
     } else {
       req.session.error = 'Credentials mismatch!!';
-      res.redirect('/');
+      res.redirect('/');console.log(memoryStore)
     }
   } catch {
     res.status(500).send()
